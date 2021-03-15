@@ -547,7 +547,6 @@ mkConsensusTracers
 mkConsensusTracers mbEKGDirect trSel verb tr nodeKern fStats = do
   let trmet = appendName "metrics" tr
 
-  blockForgeOutcomeExtractor <- mkOutcomeExtractor
   elidedFetchDecision <- newstate  -- for eliding messages in FetchDecision tr
   forgeTracers <- mkForgeTracers
   meta <- mkLOMeta Critical Public
@@ -594,14 +593,10 @@ mkConsensusTracers mbEKGDirect trSel verb tr nodeKern fStats = do
     , Consensus.localTxSubmissionServerTracer = tracerOnOff (traceLocalTxSubmissionServer trSel) verb "LocalTxSubmissionServer" tr
     , Consensus.mempoolTracer = tracerOnOff' (traceMempool trSel) $ mempoolTracer trSel tr fStats
     , Consensus.forgeTracer = tracerOnOff' (traceForge trSel) $
-        Tracer $ \tlcev@(Consensus.TraceLabelCreds _ ev) -> do
+        Tracer $ \tlcev@Consensus.TraceLabelCreds{} -> do
           traceWith (annotateSeverity
                      $ traceLeadershipChecks forgeTracers nodeKern verb tr) tlcev
           traceWith (forgeTracer verb tr forgeTracers fStats) tlcev
-          -- Don't track credentials in ForgeTime.
-          traceWith (blockForgeOutcomeExtractor
-                    $ toLogObject' verb
-                    $ appendName "ForgeTime" tr) ev
 
     , Consensus.blockchainTimeTracer = tracerOnOff' (traceBlockchainTime trSel) $
         Tracer $ \ev ->
