@@ -92,7 +92,6 @@ import           Cardano.Tracing.Constraints (TraceConstraints)
 import           Cardano.Tracing.ConvertTxId (ConvertTxId)
 import           Cardano.Tracing.Kernel
 import           Cardano.Tracing.Metrics
-import           Cardano.Tracing.MicroBenchmarking
 import           Cardano.Tracing.Queries
 
 import           Cardano.Node.Configuration.Logging
@@ -768,7 +767,6 @@ forgeTracer
 forgeTracer verb tr forgeTracers fStats =
   Tracer $ \tlcev@(Consensus.TraceLabelCreds _ ev) -> do
     -- Ignoring the credentials label for measurement and counters:
-    traceWith (measureTxsEnd tr) ev
     traceWith (notifyBlockForging fStats tr) ev
     -- Consensus tracer -- here we track the label:
     traceWith (annotateSeverity
@@ -888,7 +886,6 @@ mempoolTracer
 mempoolTracer tc tracer fStats = Tracer $ \ev -> do
     traceWith (mempoolMetricsTraceTransformer tracer) ev
     traceWith (notifyTxsProcessed fStats tracer) ev
-    traceWith (measureTxsStart tracer) ev
     let tr = appendName "Mempool" tracer
     traceWith (mpTracer tc tr) ev
 
